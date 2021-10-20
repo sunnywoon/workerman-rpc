@@ -1,4 +1,5 @@
 {
+  "name": "woon/workerman-rpc",
   "require": {
     "workerman/workerman": "^4.0",
     "illuminate/support": "^8.60",

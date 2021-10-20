@@ -1,0 +1,14 @@
+{
+  "require": {
+    "workerman/workerman": "^4.0",
+    "illuminate/support": "^8.60",
+    "ext-json": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Rpc\\": "src",
+      "Protocols\\": "protocols",
+      "Test\\": "test"
+    }
+  }
+}

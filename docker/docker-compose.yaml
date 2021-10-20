@@ -1,0 +1,28 @@
+version: '3'
+services:
+  workerman-rpc:
+    build:
+      context: ./
+      args:
+        - CONTAINER_PORT=${CONTAINER_PORT}
+        - CONTAINER_APP_DIR=${CONTAINER_APP_DIR}
+        - INSTALL_COMPOSER=${INSTALL_COMPOSER}
+        - COMPOSER_INSTALLER=${COMPOSER_INSTALLER}
+        - COMPOSER_MIRROR=${COMPOSER_MIRROR}
+        - INSTALL_LIB_EVENT=${INSTALL_LIB_EVENT}
+        - CONTAINER_PACKAGE_URL=${CONTAINER_PACKAGE_URL}
+        - CHANGE_AlPINE_SOURCE=${CHANGE_AlPINE_SOURCE}
+    ports:
+      - "9501:9501"
+    volumes:
+      - ${HOST_APP_DIR}:${CONTAINER_APP_DIR}
+    container_name: ${CONTAINER_NAME}
+    networks:
+      - network
+    stdin_open: true
+    tty: true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  network:

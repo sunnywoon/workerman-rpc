@@ -73,7 +73,7 @@ class RpcClient
             self::$instances[$server] = new self($server, $className);
         }
 
-        return self::$instances;
+        return self::$instances[$server];
     }
 
     public function address($addressArray)

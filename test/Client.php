@@ -23,8 +23,8 @@ var_dump($retSync);
 var_dump($retAsync);
 
 
-$userClient = \Rpc\RpcClient::instance('test', 'UserService', $addressArray);
-$userClient = \Rpc\RpcClient::instance('UserService', $addressArray);
+$userClient = \Rpc\RpcClient::instance('test', 'UserService');
+$userClient = $userClient->address($addressArray);
 $retSync    = $userClient->test('test_1');
 
 var_dump($retSync);

@@ -10,7 +10,8 @@ $addressArray = [
     'tcp://127.0.0.1:9501@user1:passwd2'
 ];
 
-$TestClient = \Rpc\RpcClient::instance('TestService', $addressArray);
+$TestClient = \Rpc\RpcClient::instance('test', 'TestService');
+$TestClient = $TestClient->address($addressArray);
 $retSync    = $TestClient->test('test_1');
 
 
@@ -22,6 +23,7 @@ var_dump($retSync);
 var_dump($retAsync);
 
 
+$userClient = \Rpc\RpcClient::instance('test', 'UserService', $addressArray);
 $userClient = \Rpc\RpcClient::instance('UserService', $addressArray);
 $retSync    = $userClient->test('test_1');
 

@@ -27,9 +27,9 @@ class RpcClient
      */
     const ASYNC_RECV_PREFIX = 'arecv_';
 
-    private static $addressArray = [];
+    private $addressArray = [];
 
-    private static $asyncInstances = [];
+    private $asyncInstances = [];
 
     private static $instances = [];
 
@@ -49,14 +49,37 @@ class RpcClient
         $this->className = $className;
     }
 
-    public static function instance($className, $addressArray, $server)
+    /**
+     * 防止对象实例被克隆
+     *
+     * @return void
+     */
+    private function __clone()
     {
-        if (!isset(self::$instances[$className])) {
-            self::$instances[$className] = new self($server, $className);
-            self::$addressArray[$server] = $addressArray;
+    }
+
+    /**
+     * 防止被反序列化
+     *
+     * @return void
+     */
+    private function __wakeup()
+    {
+    }
+
+    public static function instance($server, $className)
+    {
+        if (!isset(self::$instances[$server])) {
+            self::$instances[$server] = new self($server, $className);
         }
 
-        return self::$instances[$className];
+        return self::$instances;
+    }
+
+    public function address($addressArray)
+    {
+        $this->addressArray = $addressArray;
+        return $this;
     }
 
     public function __call($method, $arguments)
@@ -65,21 +88,21 @@ class RpcClient
         if (0 === strpos($method, self::ASYNC_SEND_PREFIX)) {
             $realMethod  = substr($method, strlen(self::ASYNC_SEND_PREFIX));
             $instanceKey = $realMethod . serialize($arguments);
-            if (isset(self::$asyncInstances[$instanceKey])) {
+            if (isset($this->$asyncInstances[$instanceKey])) {
                 throw new \Exception($this->className . "->$method(" . implode(',', $arguments) . ") have already been called");
             }
-            self::$asyncInstances[$instanceKey] = new self($this->server, $this->className);
-            return self::$asyncInstances[$instanceKey]->sendData($realMethod, $arguments);
+            $this->asyncInstances[$instanceKey] = new self($this->server, $this->className);
+            return $this->asyncInstances[$instanceKey]->sendData($realMethod, $arguments);
         }
         // 如果是异步接受数据
         if (0 === strpos($method, self::ASYNC_RECV_PREFIX)) {
             $realMethod  = substr($method, strlen(self::ASYNC_RECV_PREFIX));
             $instanceKey = $realMethod . serialize($arguments);
-            if (!isset(self::$asyncInstances[$instanceKey])) {
+            if (!isset($this->asyncInstances[$instanceKey])) {
                 throw new \Exception($this->server . "@" . $this->className . "->asend_$realMethod(" . implode(',', $arguments) . ") have not been called");
             }
-            $tmp = self::$asyncInstances[$instanceKey];
-            unset(self::$asyncInstances[$instanceKey]);
+            $tmp = $this->asyncInstances[$instanceKey];
+            unset($this->asyncInstances[$instanceKey]);
             return $tmp->recvData();
         }
         // 同步发送接收
@@ -117,8 +140,12 @@ class RpcClient
 
     protected function openConnection()
     {
-        $addressArr = self::$addressArray[$this->server];
-        $address    = $addressArr[array_rand($addressArr)];
+        $addressArr = $this->addressArray;
+        if (empty($addressArr)) {
+            throw new \Exception("addressArr empty");
+        }
+
+        $address = $addressArr[array_rand($addressArr)];
 
         $addressArr = explode('@', $address);
 
